@@ -138,6 +138,9 @@ class BleCharacteristic {
 
   /// Reads the latest value of the characteristic.
   Future<Uint8List?> read() => _BlePlatform.instance.centralManagerReadCharacteristic(deviceId, serviceId, id);
+
+  /// Writes the given data to the characteristic.
+  Future<void> write(Uint8List data) => _BlePlatform.instance.centralManagerWriteCharacteristic(deviceId, serviceId, id, data);
 }
 
 /// The various states of the BLE adapter.
@@ -328,6 +331,15 @@ class _BlePlatform extends PlatformInterface {
   Future<Uint8List?> centralManagerReadCharacteristic(String deviceId, String serviceId, String characteristicId) async {
     return methodChannel.invokeMethod<Uint8List>('centralManagerReadCharacteristic',
         {deviceIdParamName: deviceId, serviceIdParamName: serviceId, characteristicIdParamName: characteristicId});
+  }
+
+  Future<void> centralManagerWriteCharacteristic(String deviceId, String serviceId, String characteristicId, Uint8List data) async {
+    return methodChannel.invokeMethod<void>('centralManagerWriteCharacteristic', {
+      deviceIdParamName: deviceId,
+      serviceIdParamName: serviceId,
+      characteristicIdParamName: characteristicId,
+      dataParamName: data,
+    });
   }
 
   Future<L2CapChannel> centralManagerConnectToChannel(String deviceId, int psm) async {

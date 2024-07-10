@@ -9,6 +9,7 @@ import android.content.Context
 import android.os.ParcelUuid
 import android.util.Log
 import com.viam.ble.BlePlugin.Companion.TAG
+import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -130,15 +131,22 @@ class CentralManager(
             peripheralsMutex.withLock {
                 peripherals[macAddress] = periph
             }
-            suspendCancellableCoroutine { cont ->
-                CoroutineScope(Dispatchers.Main).launch {
-                    val contextStrong = context.get()
-                    if (contextStrong == null) {
-                        cont.resumeWithException(Exception("application context no longer available"))
-                        return@launch
+            try {
+                suspendCancellableCoroutine { cont: CancellableContinuation<Unit> ->
+                    CoroutineScope(Dispatchers.Main).launch {
+                        val contextStrong = context.get()
+                        if (contextStrong == null) {
+                            cont.resumeWithException(Exception("application context no longer available"))
+                            return@launch
+                        }
+                        periph.connect(contextStrong, cont)
                     }
-                    periph.connect(contextStrong, cont)
                 }
+            } catch (e: Throwable) {
+                peripheralsMutex.withLock {
+                    peripherals.remove(macAddress)
+                }
+                throw e
             }
             return@withContext periph.discoveredServices
         }

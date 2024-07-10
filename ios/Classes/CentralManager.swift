@@ -154,6 +154,7 @@ extension CentralManager: CBCentralManagerDelegate {
 
     public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         if let periph = (peripheralsLock.withLock { peripherals[peripheral.identifier.uuidString] }) {
+            peripheralsLock.withLock { peripherals[peripheral.identifier.uuidString] = nil }
             periph.failedConnecting(withError: error ?? RuntimeError("failed to connect to peripheral"))
         }
     }

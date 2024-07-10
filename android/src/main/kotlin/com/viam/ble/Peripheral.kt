@@ -1,9 +1,11 @@
 package com.viam.ble
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.content.Context
@@ -101,6 +103,21 @@ class Peripheral(
         val char = svc.getCharacteristic(charUUID) ?: throw Exception("characteristic $charId not found")
         @Suppress("DEPRECATION")
         return char.value ?: throw Exception("characteristic $charId not yet read")
+    }
+
+    @SuppressLint("MissingPermission")
+    fun writeCharacteristic(
+        serviceId: String,
+        charId: String,
+        data: ByteArray,
+    ): Boolean {
+        val svcUUID = UUID.fromString(serviceId)
+        val charUUID = UUID.fromString(charId)
+        val svc = gatt?.getService(svcUUID) ?: throw Exception("service $serviceId not found")
+        val char = svc.getCharacteristic(charUUID) ?: throw Exception("characteristic $charId not found")
+        char.setValue(data)
+        char.writeType = WRITE_TYPE_DEFAULT
+        return gatt?.writeCharacteristic(char) ?: throw Exception("gatt not available")
     }
 
     @Throws(SecurityException::class)
@@ -230,27 +247,39 @@ class Peripheral(
                 currentCharCont?.resume(Unit)
                 currentCharCont = null
                 discoveredSvcDoneCount++
+                val charUUID = characteristic.uuid.toString().lowercase()
+                val charSvcUUID =
+                    characteristic.service.uuid
+                        .toString()
+                        .lowercase()
                 if (status != BluetoothGatt.GATT_SUCCESS) {
-                    Log.d(TAG, "error getting characteristic ${characteristic.uuid}: $status")
+                    Log.d(TAG, "error getting characteristic $charUUID: $status")
                 } else {
                     if (!discoveredCharacteristics.containsKey(characteristic.service.uuid.toString())) {
-                        discoveredCharacteristics[characteristic.service.uuid.toString()] = mutableSetOf()
+                        discoveredCharacteristics[charSvcUUID] = mutableSetOf()
                     }
-                    discoveredCharacteristics[characteristic.service.uuid.toString()]?.add(characteristic.uuid.toString())
+                    discoveredCharacteristics[charSvcUUID]?.add(charUUID)
                 }
                 if (discoveredSvcDoneCount == neededCharDoneCount) {
                     _discoveredServices =
                         gatt.services
-                            .filter { discoveredCharacteristics.containsKey(it.uuid.toString()) }
+                            .filter { discoveredCharacteristics.containsKey(it.uuid.toString().lowercase()) }
                             .map { svc ->
                                 hashMapOf(
-                                    "id" to svc.uuid.toString(),
+                                    "id" to svc.uuid.toString().lowercase(),
                                     "characteristics" to
                                         svc.characteristics
-                                            .filter { discoveredCharacteristics[it.service.uuid.toString()]!!.contains(it.uuid.toString()) }
-                                            .map { char ->
+                                            .filter {
+                                                discoveredCharacteristics[
+                                                    it.service.uuid
+                                                        .toString()
+                                                        .lowercase(),
+                                                ]!!.contains(
+                                                    it.uuid.toString().lowercase(),
+                                                )
+                                            }.map { char ->
                                                 hashMapOf(
-                                                    "id" to char.uuid.toString(),
+                                                    "id" to char.uuid.toString().lowercase(),
                                                 )
                                             },
                                 )

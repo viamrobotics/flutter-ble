@@ -16,13 +16,13 @@ class L2CAPChannel(
     @Volatile
     private var isClosed = false
 
-    suspend fun write(message: ByteArray) {
+    suspend fun write(data: ByteArray) {
         if (isClosed) {
             throw Exception("channel closed")
         }
         withContext(Dispatchers.IO) {
             writeMutex.withLock {
-                socket.outputStream.write(message)
+                socket.outputStream.write(data)
             }
         }
     }

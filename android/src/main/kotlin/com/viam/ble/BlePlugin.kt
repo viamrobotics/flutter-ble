@@ -196,6 +196,18 @@ class BlePlugin :
                     periph.readCharacteristic(serviceId, charId)
                 }, result)
             }
+            "centralManagerWriteCharacteristic" -> {
+                val macAddress: String = requireNotNullArgument(call, DEVICE_ID_PARAM_NAME)
+                val serviceId: String = requireNotNullArgument(call, SERVICE_ID_PARAM_NAME)
+                val charId: String = requireNotNullArgument(call, CHARACTERISTIC_ID_PARAM_NAME)
+                val data: ByteArray = requireNotNullArgument(call, DATA_PARAM_NAME)
+                flutterMethodCallHandler(call.method, {
+                    val periph =
+                        centralManager.getPeripheral(macAddress)
+                            ?: throw Exception("peripheral $macAddress not found")
+                    periph.writeCharacteristic(serviceId, charId, data)
+                }, result)
+            }
             "centralManagerConnectToChannel" -> {
                 val macAddress: String = requireNotNullArgument(call, DEVICE_ID_PARAM_NAME)
                 val psm: Int = requireNotNullArgument(call, PSM_PARAM_NAME)

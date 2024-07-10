@@ -72,6 +72,10 @@ public class Peripheral: NSObject {
         }
     }
 
+    public func writeCharacteristic(_ characteristic: CBCharacteristic, _ data: Data) {
+        self.actualPeripheral.writeValue(data, for: characteristic, type: CBCharacteristicWriteType.withResponse)
+    }
+
     public func connectToL2CAPChannel(psm: UInt16) async throws -> Int {
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Int, Error>) in
             channelsLock.withLock {
@@ -220,9 +224,9 @@ extension Peripheral: CBPeripheralDelegate {
         }
         if discoveredSvcDoneCount == neededSvcDoneCount {
             discoveredServices = peripheral.services?.map({ CBService in
-                return ["id": CBService.uuid.uuidString,
+                return ["id": CBService.uuid.uuidString.lowercased(),
                         "characteristics": CBService.characteristics?.map({ CBCharacteristic in
-                            return ["id": CBCharacteristic.uuid.uuidString]
+                            return ["id": CBCharacteristic.uuid.uuidString.lowercased()]
                         }) ?? []]
             }) ?? []
             contLocks.withLock {

@@ -190,10 +190,10 @@ public class BlePlugin: NSObject, FlutterPlugin {
                     return
                 }
                 let service = periph.actualPeripheral.services?.first(where: { elem in
-                    return elem.uuid.uuidString == svcId
+                    return elem.uuid.uuidString.lowercased() == svcId.lowercased()
                 })
                 let characteristic = service?.characteristics?.first(where: { char in
-                    return char.uuid.uuidString == charId
+                    return char.uuid.uuidString.lowercased() == charId.lowercased()
                 })
 
                 if let characteristic {
@@ -204,6 +204,35 @@ public class BlePlugin: NSObject, FlutterPlugin {
                     return
                 }
                 result(createFltuterError(call.method, withMessage: "failed to find given characteristic to read"))
+            } else {
+                throwInvalidArguments(call, result)
+            }
+            return
+        case "centralManagerWriteCharacteristic":
+            if let arguments = call.arguments as? [String: Any],
+               let deviceId = arguments[kDeviceIdParamName] as? String,
+               let svcId = arguments[kServiceIdParamName] as? String,
+               let charId = arguments[kCharacteristicIdParamName] as? String,
+               let data = arguments[kDataParamName] as? FlutterStandardTypedData {
+                guard let periph = try CentralManager.singleton.getPeripheral(deviceId) else {
+                    throwInvalidArguments(call, result, "peripheral not found")
+                    return
+                }
+                let service = periph.actualPeripheral.services?.first(where: { elem in
+                    return elem.uuid.uuidString.lowercased() == svcId.lowercased()
+                })
+                let characteristic = service?.characteristics?.first(where: { char in
+                    return char.uuid.uuidString.lowercased() == charId.lowercased()
+                })
+
+                if let characteristic {
+                    flutterMethodCallHandler(
+                        methodName: call.method,
+                        call: { [weak periph] in return periph?
+                            .writeCharacteristic(characteristic, data.data) }, result: result)
+                    return
+                }
+                result(createFltuterError(call.method, withMessage: "failed to find given characteristic to write"))
             } else {
                 throwInvalidArguments(call, result)
             }
