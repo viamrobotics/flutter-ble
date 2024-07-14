@@ -167,7 +167,9 @@ class PeripheralManager(
 
     suspend fun startAdvertising(withName: String) {
         mustBePoweredOn()
-        btMan.adapter.setName(withName)
+        if (withName.isNotEmpty()) {
+            btMan.adapter.setName(withName)
+        }
         val settings =
             AdvertiseSettings
                 .Builder()

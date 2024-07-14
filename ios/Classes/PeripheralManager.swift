@@ -119,12 +119,15 @@ public class PeripheralManager: NSObject {
         }
     }
 
-    public func startAdvertising(withName: String) throws {
+    public func startAdvertising(withName: String?) throws {
         try mustBePoweredOn()
+        var advertData: [String: Any] =
+            [CBAdvertisementDataServiceUUIDsKey: servicesToAdvertise.map { $0.uuid }]
+        if withName != nil {
+            advertData[CBAdvertisementDataLocalNameKey] = withName
+        }
         servicesToAdvertiseLock.withLock {
-            manager.startAdvertising(
-                [CBAdvertisementDataLocalNameKey: withName,
-                 CBAdvertisementDataServiceUUIDsKey: servicesToAdvertise.map { $0.uuid }])
+            manager.startAdvertising(advertData)
         }
     }
 

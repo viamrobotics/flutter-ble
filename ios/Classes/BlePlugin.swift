@@ -66,17 +66,19 @@ public class BlePlugin: NSObject, FlutterPlugin {
         case "peripheralManagerAddReadOnlyService":
             if let arguments = call.arguments as? [String: Any],
                let uuid = arguments[kUUIDParamName] as? String,
-               let charDescs = arguments[kCharacteristicsParamName] as? [String: String] {
+               var charDescs = arguments[kCharacteristicsParamName] as? [String: String] {
                 var chars: [CBMutableCharacteristic] = []
                 guard let svcTypeUUID = UUID(uuidString: uuid) else {
                     throwInvalidArguments(call, result, "invalid service type UUID")
                     return
                 }
-                for (charUUID, value) in charDescs {
+                let sortedKeys = Array(charDescs.keys).sorted(by: <)
+                for charUUID in sortedKeys {
                     guard let charTypeUUID = UUID(uuidString: charUUID) else {
                         throwInvalidArguments(call, result, "invalid characteristic type UUID")
                         return
                     }
+                    let value = charDescs[charUUID]!
                     chars.append(CBMutableCharacteristic(
                                     type: CBUUID(nsuuid: charTypeUUID),
                                     properties: [.read],

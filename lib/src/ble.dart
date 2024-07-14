@@ -61,7 +61,7 @@ class BlePeripheral {
       _BlePlatform.instance.peripheralManagerAddReadOnlyService(uuid, characteristicValues);
 
   /// Starts advertising with the given local name along with any added services from [addReadOnlyService].
-  Future<void> startAdvertising(String name) => _BlePlatform.instance.peripheralManagerStartAdvertising(name);
+  Future<void> startAdvertising([String name = '']) => _BlePlatform.instance.peripheralManagerStartAdvertising(name);
 
   /// Publishes an L2CAP channel and returns the corresponding PSM and stream to await new channels.
   ///

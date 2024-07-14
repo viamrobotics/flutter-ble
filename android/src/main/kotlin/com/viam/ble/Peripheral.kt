@@ -210,17 +210,29 @@ class Peripheral(
                 gatt: BluetoothGatt?,
                 status: Int,
             ) {
-                if (status == BluetoothGatt.GATT_SUCCESS) {
+                if (status == BluetoothGatt.GATT_SUCCESS && gatt != null) {
                     val charsToRead =
-                        gatt?.services?.flatMap { svc ->
-                            svc.characteristics.filter { char ->
-                                char.properties and BluetoothGattCharacteristic.PROPERTY_READ != 0
+                        gatt.services?.flatMap { svc ->
+                            svc.characteristics.filter filter@{ char ->
+                                if (char.properties and BluetoothGattCharacteristic.PROPERTY_READ != 0) {
+                                    return@filter true
+                                }
+                                val charUUID = char.uuid.toString().lowercase()
+                                val charSvcUUID =
+                                    char.service.uuid
+                                        .toString()
+                                        .lowercase()
+                                if (!discoveredCharacteristics.containsKey(charSvcUUID)) {
+                                    discoveredCharacteristics[charSvcUUID] = mutableSetOf()
+                                }
+                                discoveredCharacteristics[charSvcUUID]?.add(charUUID)
+
+                                return@filter false
                             }
                         }
                     neededCharDoneCount = charsToRead?.size ?: 0
                     if (neededCharDoneCount == 0) {
-                        connectedContinuation?.resume(Unit)
-                        connectedContinuation = null
+                        serviceDiscoveryDone(gatt)
                         return
                     }
                     CoroutineScope(Dispatchers.IO).launch {
@@ -236,6 +248,34 @@ class Peripheral(
                 } else {
                     Log.e(TAG, "onServicesDiscovered received: $status")
                 }
+            }
+
+            fun serviceDiscoveryDone(gatt: BluetoothGatt) {
+                _discoveredServices =
+                    gatt.services
+                        .filter { discoveredCharacteristics.containsKey(it.uuid.toString().lowercase()) }
+                        .map { svc ->
+                            hashMapOf(
+                                "id" to svc.uuid.toString().lowercase(),
+                                "characteristics" to
+                                    svc.characteristics
+                                        .filter {
+                                            discoveredCharacteristics[
+                                                it.service.uuid
+                                                    .toString()
+                                                    .lowercase(),
+                                            ]!!.contains(
+                                                it.uuid.toString().lowercase(),
+                                            )
+                                        }.map { char ->
+                                            hashMapOf(
+                                                "id" to char.uuid.toString().lowercase(),
+                                            )
+                                        },
+                            )
+                        }
+                connectedContinuation?.resume(Unit)
+                connectedContinuation = null
             }
 
             @Deprecated("Deprecated in Java")
@@ -255,37 +295,13 @@ class Peripheral(
                 if (status != BluetoothGatt.GATT_SUCCESS) {
                     Log.d(TAG, "error getting characteristic $charUUID: $status")
                 } else {
-                    if (!discoveredCharacteristics.containsKey(characteristic.service.uuid.toString())) {
+                    if (!discoveredCharacteristics.containsKey(charSvcUUID)) {
                         discoveredCharacteristics[charSvcUUID] = mutableSetOf()
                     }
                     discoveredCharacteristics[charSvcUUID]?.add(charUUID)
                 }
                 if (discoveredSvcDoneCount == neededCharDoneCount) {
-                    _discoveredServices =
-                        gatt.services
-                            .filter { discoveredCharacteristics.containsKey(it.uuid.toString().lowercase()) }
-                            .map { svc ->
-                                hashMapOf(
-                                    "id" to svc.uuid.toString().lowercase(),
-                                    "characteristics" to
-                                        svc.characteristics
-                                            .filter {
-                                                discoveredCharacteristics[
-                                                    it.service.uuid
-                                                        .toString()
-                                                        .lowercase(),
-                                                ]!!.contains(
-                                                    it.uuid.toString().lowercase(),
-                                                )
-                                            }.map { char ->
-                                                hashMapOf(
-                                                    "id" to char.uuid.toString().lowercase(),
-                                                )
-                                            },
-                                )
-                            }
-                    connectedContinuation?.resume(Unit)
-                    connectedContinuation = null
+                    serviceDiscoveryDone(gatt)
                 }
             }
         }

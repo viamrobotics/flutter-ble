@@ -56,6 +56,43 @@ class CentralManager(
         mustBePoweredOn()
         withContext(Dispatchers.IO) {
             scanMutex.withLock {
+                // Android excludes bonded devices from showing up in advertisements. So we need
+                // to connect to it in order to check out its services. We'll disconnect if it's
+                // of no use to us.
+                btMan.adapter.bondedDevices.forEach { device ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        for (i in 1..3) {
+                            try {
+                                Log.d(
+                                    TAG,
+                                    "connecting to bonded device ${device.name} ${device.address} to see if it has desired service(s)",
+                                )
+                                val connectedDevice = connectToDevice(device.address)
+                                val connectedDeviceServiceIds = connectedDevice.map { it["id"] as String }
+                                if (connectedDeviceServiceIds.intersect(serviceIds.map(String::lowercase).toSet()).isNotEmpty()) {
+                                    Log.d(TAG, "bonded device ${device.address} contains a desired service id")
+                                    _scanForPeripheralFlow.emit(
+                                        Result.success(
+                                            hashMapOf(
+                                                "id" to device.address,
+                                                "name" to device.name,
+                                                "service_ids" to device.uuids?.map { toString() },
+                                            ),
+                                        ),
+                                    )
+                                    break
+                                } else {
+                                    Log.d(TAG, "bonded device ${device.address} is not useful to us")
+                                    disconnectFromDevice(device.address)
+                                }
+                            } catch (e: Throwable) {
+                                Log.d(TAG, "failed to connect to bonded device", e)
+                            }
+                            delay(5000)
+                        }
+                    }
+                }
+
                 if (isScanning) {
                     return@withContext
                 }
@@ -90,6 +127,7 @@ class CentralManager(
                             }.toMutableList()
                 }
                 lastNScans.add(now)
+                Log.d(TAG, "requesting scan of $serviceIds")
                 btMan.adapter.bluetoothLeScanner.startScan(
                     serviceIds.map {
                         ScanFilter
