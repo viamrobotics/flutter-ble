@@ -50,6 +50,7 @@ class CentralManager(
     private var isScanning = false
     private var lastNScans = mutableListOf<Long>()
     private val scanMutex = Mutex()
+    private val excludeFromScan = mutableSetOf<String>()
 
     @Throws(SecurityException::class)
     suspend fun scanForPeripherals(serviceIds: List<String> = listOf()) {
@@ -59,7 +60,9 @@ class CentralManager(
                 // Android excludes bonded devices from showing up in advertisements. So we need
                 // to connect to it in order to check out its services. We'll disconnect if it's
                 // of no use to us.
+                excludeFromScan.clear()
                 btMan.adapter.bondedDevices.forEach { device ->
+                    excludeFromScan.add(device.address)
                     CoroutineScope(Dispatchers.IO).launch {
                         for (i in 1..3) {
                             try {
@@ -86,7 +89,7 @@ class CentralManager(
                                     disconnectFromDevice(device.address)
                                 }
                             } catch (e: Throwable) {
-                                Log.d(TAG, "failed to connect to bonded device", e)
+                                Log.d(TAG, "failed to connect to bonded device ${device.address}", e)
                             }
                             delay(5000)
                         }
@@ -222,6 +225,11 @@ class CentralManager(
             ) {
                 super.onScanResult(callbackType, result)
                 CoroutineScope(Dispatchers.IO).launch {
+                    scanMutex.withLock {
+                        if (excludeFromScan.contains(result.device.address)) {
+                            return@launch
+                        }
+                    }
                     _scanForPeripheralFlow.emit(
                         Result.success(
                             hashMapOf(

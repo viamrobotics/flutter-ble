@@ -462,8 +462,10 @@ class _L2CapChannelStreamedSocket with StreamFromControllerMixin<Uint8List>, IOS
     streamController.close();
   }
 
-  // Note(erd): this may be needed. Saw this once
-  // error connecting NoSuchMethodError: Class '__L2CapChannelStreamedSocket' has no instance method '_detachRaw'
+  // Note(erd): We can't implement this and it prevents SecureSocket.secure from working
+  // when using HttpClient.
+  // See https://github.com/dart-lang/sdk/issues/50199. Nothing we can do other than rely
+  // on a different HTTP library.
   //Future<RawSecureSocket> _detachRaw() {}
 
   @override
