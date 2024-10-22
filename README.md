@@ -23,6 +23,15 @@ Make sure your project meets the minimum requirements:
 - Minimum Android SDK: 29
 - Kotlin version: 1.7.10
 
+
+## Installation
+
+`flutter pub add blev`
+
+## Upgrading
+
+`flutter pub upgrade blev`
+
 ## iOS Permissions
 
 ### Update Info.plist
