@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:async/async.dart';
-import 'package:ble/src/ble.dart';
-import 'package:ble/src/ble_channel_socket_mux.dart';
-import 'package:ble/src/mixins.dart';
+import 'package:blev/src/ble.dart';
+import 'package:blev/src/ble_channel_socket_mux.dart';
+import 'package:blev/src/mixins.dart';
 import 'package:flutter/foundation.dart';
 
 /// Client side utilities for L2CAP channels as sockets.

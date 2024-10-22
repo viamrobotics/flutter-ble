@@ -12,7 +12,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  ble: 
+  blev:
     path: ../../
   permission_handler: ^11.3.1
   socks5_proxy: ^1.0.6

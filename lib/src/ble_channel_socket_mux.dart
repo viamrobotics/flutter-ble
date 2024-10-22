@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:async/async.dart';
-import 'package:ble/src/ble.dart';
-import 'package:ble/src/mixins.dart';
+import 'package:blev/src/ble.dart';
+import 'package:blev/src/mixins.dart';
 import 'package:flutter/foundation.dart';
 
 /// A socket multiplexer that owns the underlying L2CapChannel.

@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:async/async.dart';
-import 'package:ble/ble.dart';
-import 'package:ble/ble_socket.dart';
-import 'package:ble/src/ble_channel_socket_mux.dart';
+import 'package:blev/ble.dart';
+import 'package:blev/ble_socket.dart';
+import 'package:blev/src/ble_channel_socket_mux.dart';
 import 'package:flutter/foundation.dart';
 import 'package:test/test.dart';
 

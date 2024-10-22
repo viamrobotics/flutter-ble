@@ -1,4 +1,4 @@
-name: ble_central_example
+name: blev_central_example
 description: A example usage for the ble package for central devices.
 publish_to: 'none' 
 
@@ -12,7 +12,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  ble: 
+  blev:
     path: ../../
   permission_handler: ^11.3.1
 

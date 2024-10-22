@@ -1,9 +1,9 @@
 // ignore_for_file: avoid_print, public_member_api_docs
 import 'dart:async';
 
-import 'package:ble/ble.dart';
-import 'package:ble/ble_peripheral.dart';
-import 'package:ble/ble_socket.dart';
+import 'package:blev/ble.dart';
+import 'package:blev/ble_peripheral.dart';
+import 'package:blev/ble_socket.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:socks5_proxy/socks_server.dart';

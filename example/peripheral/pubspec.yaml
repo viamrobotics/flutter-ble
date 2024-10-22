@@ -1,4 +1,4 @@
-name: ble_peripheral_example
+name: blev_peripheral_example
 description: A example usage for the ble package for peripheral devices.
 publish_to: 'none' 
 
@@ -12,7 +12,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  ble: 
+  blev:
     path: ../../
   permission_handler: ^11.3.1
 
