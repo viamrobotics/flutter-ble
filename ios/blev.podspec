@@ -3,7 +3,7 @@
 # Run `pod lib lint ble.podspec` to validate before publishing.
 #
 Pod::Spec.new do |s|
-  s.name             = 'ble'
+  s.name             = 'blev'
   s.version          = '0.0.1'
   s.summary          = 'A Flutter plugin project for BLE (Bluetooth Low Energy) operations.'
   s.description      = <<-DESC
