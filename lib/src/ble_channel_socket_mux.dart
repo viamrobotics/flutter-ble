@@ -142,10 +142,11 @@ abstract class _L2CapChannelSocketMultiplexer {
         await _channel.write(pkt);
       }
     } catch (err) {
-      if (!_completer.isCompleted) {
-        debugPrint('error sending keep alive frames into l2cap channel: $err');
-      }
       await close();
+      // Assume that a failure to write a keepalive indicates a closed L2Cap
+      // COC. Throw custom error that can be caught in application code to
+      // execute custom reconnection logic.
+      throw L2CapDisconnectedError('keepalive failed to send: $err');
     }
   }
 

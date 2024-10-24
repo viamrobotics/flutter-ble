@@ -183,6 +183,19 @@ enum AdapterState {
   }
 }
 
+/// Error indicating that relevant L2Cap COC is disconnected.
+class L2CapDisconnectedError extends Error {
+  final String _message;
+
+  /// Creates a new L2CapDisconnectedError.
+  L2CapDisconnectedError(this._message);
+
+  @override
+  String toString() {
+    return 'L2CapDisconnectedError: $_message';
+  }
+}
+
 /// A simple, raw read and write wrapper around an L2CAP COC.
 abstract class L2CapChannel {
   /// Writes to the channel and returns how much was written.
