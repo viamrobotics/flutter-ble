@@ -183,7 +183,7 @@ enum AdapterState {
   }
 }
 
-/// Error indicating that relevant L2Cap COC is disconnected.
+/// Error indicating that the relevant L2Cap COC is disconnected.
 class L2CapDisconnectedError extends Error {
   final String _message;
 
