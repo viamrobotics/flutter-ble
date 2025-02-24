@@ -21,6 +21,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
+import java.util.concurrent.TimeoutException
 import kotlin.coroutines.resumeWithException
 import kotlin.math.max
 
@@ -73,7 +74,7 @@ class CentralManager(
                                 val connectedDevice = connectToDevice(device.address)
                                 val connectedDeviceServiceIds = connectedDevice.map { it["id"] as String }
                                 if (connectedDeviceServiceIds.intersect(serviceIds.map(String::lowercase).toSet()).isNotEmpty()) {
-                                    Log.d(TAG, "bonded device ${device.address} contains a desired service id")
+                                    Log.d(TAG, "bonded device ${device.name} ${device.address} contains a desired service id")
                                     _scanForPeripheralFlow.emit(
                                         Result.success(
                                             hashMapOf(
@@ -85,11 +86,18 @@ class CentralManager(
                                     )
                                     break
                                 } else {
-                                    Log.d(TAG, "bonded device ${device.address} is not useful to us")
+                                    Log.d(TAG, "bonded device ${device.name} ${device.address} is not useful to us")
                                     disconnectFromDevice(device.address)
                                 }
                             } catch (e: Throwable) {
-                                Log.d(TAG, "failed to connect to bonded device ${device.address}", e)
+                                when(e) {
+                                    // time outs can be caused by a multitude of reasons, including if the bonded device is off.
+                                    // for that reason, only report stack traces if the exception is not a time out.
+                                    is TimeoutException -> {
+                                        Log.d(TAG, "timed out trying to connect to bonded device ${device.name} ${device.address}")
+                                    }
+                                    else -> Log.d(TAG, "failed to connect to bonded device ${device.name} ${device.address}", e)
+                                }
                             }
                             delay(5000)
                         }

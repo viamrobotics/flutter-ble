@@ -21,6 +21,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.util.UUID
+import java.util.concurrent.TimeoutException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -185,13 +186,20 @@ class Peripheral(
                 status: Int,
                 newState: Int,
             ) {
-                Log.d(TAG, "onConnectionStateChange $status $newState")
+                Log.d(TAG, "onConnectionStateChange status: $status state: $newState device: ${device.name} ${device.address}")
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
                     requireNotNull(gatt)
                     gatt.discoverServices()
                 } else {
                     disconnected = true
-                    connectedContinuation?.resumeWithException(Exception("failed to connect with GATT status: $status state: $newState"))
+                    val exceptionStr = "failed to connect to device: ${device.name} ${device.address} with GATT status: $status state: $newState"
+                    // 147 corresponds to GATT_CONNECTION_TIMEOUT but that constant was only introduced in API level 35, so doing a straight
+                    // comparison instead.
+                    if (status == 147) {
+                        connectedContinuation?.resumeWithException(TimeoutException(exceptionStr))
+                    } else {
+                        connectedContinuation?.resumeWithException(Exception(exceptionStr))
+                    }
                     connectedContinuation = null
                     val disconnectRequested = disconnectedContinuation != null
                     disconnectedContinuation?.resume(Unit)
