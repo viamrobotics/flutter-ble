@@ -1,3 +1,7 @@
+# 0.0.4
+
+Throw and catch timeout exception for connection time outs.
+
 # 0.0.3
 
 Add and return L2CapDisconnectedError when L2CAP disconnection is detected.
