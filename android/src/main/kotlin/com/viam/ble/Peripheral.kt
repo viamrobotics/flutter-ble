@@ -193,7 +193,7 @@ class Peripheral(
                 } else {
                     disconnected = true
                     val exceptionStr = "failed to connect to device: ${device.name} ${device.address} with GATT status: $status state: $newState"
-                    // 147 corresponds to GATT_CONNECTION_TIMEOUT but that was introduced in API level 35, so doing a straight
+                    // 147 corresponds to GATT_CONNECTION_TIMEOUT but that constant was only introduced in API level 35, so doing a straight
                     // comparison instead.
                     if (status == 147) {
                         connectedContinuation?.resumeWithException(TimeoutException(exceptionStr))
