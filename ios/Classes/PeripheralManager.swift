@@ -8,11 +8,9 @@ public class PeripheralManager: NSObject {
 
     static let singleton = PeripheralManager()
 
-    private var actualManager: CBPeripheralManager?
-    var manager: CBPeripheralManager {
-        // This force unwrap is okay
-        return actualManager!
-    }
+    private lazy var manager: CBPeripheralManager = {
+        return CBPeripheralManager(delegate: self, queue: managerQueue)
+    }()
 
     private var managerQueue = DispatchQueue.global(qos: .utility)
     var channels: [Int: L2CAPChannelManager] = [:] // psm:manager
@@ -23,11 +21,6 @@ public class PeripheralManager: NSObject {
 
     private var servicesToAdvertise: [CBMutableService] = []
     private var servicesToAdvertiseLock: NSLock = NSLock()
-
-    private override init() {
-        super.init()
-        actualManager = CBPeripheralManager(delegate: self, queue: managerQueue)
-    }
 
     public func reset() async {
         self.manager.removeAllServices()
@@ -146,8 +139,9 @@ public class PeripheralManager: NSObject {
     }
 }
 
-extension PeripheralManager: CBPeripheralManagerDelegate {
+// MARK: - CBPeripheralManagerDelegate
 
+extension PeripheralManager: CBPeripheralManagerDelegate {
     public func peripheralManager(
         _ peripheral: CBPeripheralManager,
         didOpen channel: CBL2CAPChannel?, error: (any Error)?) {
