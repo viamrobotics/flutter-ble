@@ -15,6 +15,10 @@ public class CentralManager: NSObject {
     private var peripherals: [String: Peripheral] = [:]
     private var peripheralsLock: NSLock = NSLock()
 
+    private override init() {
+        super.init()
+    }
+
     public func reset() async {
         if self.manager.state == CBManagerState.poweredOn {
             do {

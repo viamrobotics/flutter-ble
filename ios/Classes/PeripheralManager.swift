@@ -22,6 +22,10 @@ public class PeripheralManager: NSObject {
     private var servicesToAdvertise: [CBMutableService] = []
     private var servicesToAdvertiseLock: NSLock = NSLock()
 
+    private override init() {
+        super.init()
+    }
+
     public func reset() async {
         self.manager.removeAllServices()
         self.servicesToAdvertiseLock.withLock {
