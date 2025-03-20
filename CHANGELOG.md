@@ -1,3 +1,7 @@
+# 0.0.5
+
+Add lazy init for Core Bluetooth managers on iOS to avoid requesting permissions on launch.
+
 # 0.0.4
 
 Throw and catch timeout exception for connection time outs.
