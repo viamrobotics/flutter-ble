@@ -1,3 +1,7 @@
+# 0.0.6
+
+Export ConnectedBlePeripheral for use
+
 # 0.0.5
 
 Add lazy init for Core Bluetooth managers on iOS to avoid requesting permissions on launch.
