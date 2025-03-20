@@ -7,11 +7,9 @@ import Foundation
 public class CentralManager: NSObject {
     static let singleton = CentralManager()
 
-    private var actualManager: CBCentralManager?
-    private var manager: CBCentralManager {
-        // This force unwrap is okay
-        return actualManager!
-    }
+    private lazy var manager: CBCentralManager = {
+        return CBCentralManager(delegate: self, queue: managerQueue)
+    }()
 
     private var managerQueue = DispatchQueue.global(qos: .utility)
     private var peripherals: [String: Peripheral] = [:]
@@ -19,7 +17,6 @@ public class CentralManager: NSObject {
 
     private override init() {
         super.init()
-        actualManager = CBCentralManager(delegate: self, queue: managerQueue)
     }
 
     public func reset() async {
@@ -115,8 +112,9 @@ public class CentralManager: NSObject {
     }
 }
 
-extension CentralManager: CBCentralManagerDelegate {
+// MARK: - CBCentralManagerDelegate
 
+extension CentralManager: CBCentralManagerDelegate {
     public func centralManagerDidUpdateState(_ central: CBCentralManager) {
         let userInfo = makeAdapterState(state: central.state)
         NotificationCenter.default.post(
