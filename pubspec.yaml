@@ -1,7 +1,7 @@
 name: blev
 description: A flutter plugin to communicate with Bluetooth Low Energy devices.
 repository: https://github.com/viamrobotics/flutter-ble
-version: 0.0.6
+version: 0.0.7
 homepage: https://viam.com
 topics:
   - bluetooth

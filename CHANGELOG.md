@@ -1,3 +1,7 @@
+# 0.0.7
+
+Optional name for DiscoveredBlePeripheral
+
 # 0.0.6
 
 Export ConnectedBlePeripheral for use
