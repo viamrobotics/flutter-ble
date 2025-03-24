@@ -80,7 +80,7 @@ class DiscoveredBlePeripheral {
   final String id;
 
   /// The name of the peripheral for additional verification.
-  final String name;
+  final String? name;
 
   DiscoveredBlePeripheral._private(this.id, this.name);
 }
@@ -309,7 +309,7 @@ class _BlePlatform extends PlatformInterface {
     final stream = const EventChannel(centralManagerScanForPeripheralsNotificationName)
         .receiveBroadcastStream({'service_ids': serviceIds}).cast<Map<Object?, Object?>>();
     return cancelWrapper(stream.asyncMap((event) {
-      return DiscoveredBlePeripheral._private(event['id']! as String, event['name']! as String);
+      return DiscoveredBlePeripheral._private(event['id']! as String, event['name'] as String?);
     }), () => centralManagerStopScanningForPeripherals());
   }
 
