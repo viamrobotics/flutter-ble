@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'blev'
-  s.version          = '0.0.6'
+  s.version          = '0.0.7'
   s.summary          = 'A Flutter plugin project for BLE (Bluetooth Low Energy) operations.'
   s.description      = <<-DESC
 A new Flutter plugin project.
